@@ -1,26 +1,24 @@
 # Galumbra Supreme
 
-A premium social media platform starter built with Next.js, TypeScript, and Tailwind CSS.
+Galumbra Supreme is a premium social-media starter built with Next.js, TypeScript, and Tailwind CSS.
 
-## Scripts
+## Included
 
-- `npm install`
-- `npm run dev`
-- `npm run build`
-- `npm run start`
+- premium dark UI and branding
+- creator discovery UI
+- community and messaging screens
+- profile and premium upgrade pages
+- responsive social feed experience
 
-## Features
-
-- premium dark-brand UI
-- creator discovery cards
-- social feed layout
-- trending panel
-- communities and live sections
-- responsive design
-
-## Getting started
+## Run locally
 
 ```bash
 npm install
 npm run dev
 ```
+
+Then open http://localhost:3000
+
+## Deploy
+
+This project is ready for deployment on Vercel or any Node hosting provider.
