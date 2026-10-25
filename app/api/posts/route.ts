@@ -1,39 +1,67 @@
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { readDb, writeDb } from "@/lib/data";
+import { z } from "zod";
+import { getCurrentUser } from "@/lib/auth";
+
+const createPostSchema = z.object({
+  content: z.string().min(1),
+  image: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+});
 
 export async function GET() {
-  const db = await readDb();
-  return NextResponse.json({ posts: db.posts.slice(0, 10) });
+  const posts = await prisma.post.findMany({
+    include: { user: true },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  });
+
+  return NextResponse.json({ posts: posts.map((post) => ({
+    id: post.id,
+    author: post.user.name,
+    authorHandle: post.user.handle,
+    role: post.user.role,
+    avatar: post.user.avatar,
+    content: post.content,
+    image: post.image,
+    likes: post.likes,
+    comments: post.comments,
+    shares: post.shares,
+    tags: post.tags,
+    createdAt: post.createdAt.toISOString(),
+  })) });
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const db = await readDb();
-
-  const user = db.users.find((item) => item.id === cookies().get("galumbra_session")?.value);
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const newPost = {
-    id: `post_${Date.now()}`,
-    authorId: user.id,
-    author: user.name,
-    authorHandle: user.handle,
-    role: user.role,
-    avatar: user.avatar,
-    content: body.content,
-    image: body.image || undefined,
-    likes: 0,
-    comments: 0,
-    shares: 0,
-    tags: body.tags || [],
-    createdAt: new Date().toLocaleString(),
-  };
+  const body = createPostSchema.parse(await request.json());
 
-  db.posts.unshift(newPost);
-  await writeDb(db);
+  const post = await prisma.post.create({
+    data: {
+      userId: user.id,
+      content: body.content,
+      image: body.image,
+      tags: body.tags || [],
+    },
+    include: { user: true },
+  });
 
-  return NextResponse.json({ ok: true, post: newPost });
+  return NextResponse.json({ ok: true, post: {
+    id: post.id,
+    author: post.user.name,
+    authorHandle: post.user.handle,
+    role: post.user.role,
+    avatar: post.user.avatar,
+    content: post.content,
+    image: post.image,
+    likes: post.likes,
+    comments: post.comments,
+    shares: post.shares,
+    tags: post.tags,
+    createdAt: post.createdAt.toISOString(),
+  } });
 }

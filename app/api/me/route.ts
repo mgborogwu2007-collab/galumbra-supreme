@@ -1,16 +1,17 @@
+import { prisma } from "@/lib/prisma";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { readDb, writeDb } from "@/lib/data";
 
-export async function POST(_request: Request, { params }: { params: { id: string } }) {
-  const db = await readDb();
-  const post = db.posts.find((item) => item.id === params.id);
-
-  if (!post) {
-    return NextResponse.json({ error: "Post not found" }, { status: 404 });
+export async function GET() {
+  const sessionId = cookies().get("galumbra_session")?.value;
+  if (!sessionId) {
+    return NextResponse.json({ user: null });
   }
 
-  post.likes += 1;
-  await writeDb(db);
+  const user = await prisma.user.findUnique({ where: { id: sessionId } });
+  if (!user) {
+    return NextResponse.json({ user: null });
+  }
 
-  return NextResponse.json({ ok: true, likes: post.likes });
+  return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email, handle: user.handle, role: user.role, bio: user.bio, followers: user.followers, following: user.following, premium: user.premium } });
 }
