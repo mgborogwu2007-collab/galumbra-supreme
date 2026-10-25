@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { communities, creatorCards, messages, posts, profileHighlights, quickLinks, stats, trendTopics } from "@/lib/mock-data";
+import { readDb } from "@/lib/data";
 
-export default function ExplorePage() {
+export default async function ExplorePage() {
+  const db = await readDb();
+
   return (
     <main className="min-h-screen bg-[#080b14] p-6 text-white">
       <div className="mx-auto max-w-7xl">
@@ -28,7 +30,12 @@ export default function ExplorePage() {
 
           <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {stats.map((stat) => (
+              {[
+                { label: 'Active creators', value: '2.9M' },
+                { label: 'Conversations', value: '89M' },
+                { label: 'Growth velocity', value: '4.8x' },
+                { label: 'Creator revenue', value: '$12M' },
+              ].map((stat) => (
                 <div key={stat.label} className="rounded-[22px] border border-white/10 bg-[#111827]/80 p-4">
                   <div className="text-xs uppercase tracking-[0.2em] text-slate-400">{stat.label}</div>
                   <div className="mt-3 text-3xl font-black text-white">{stat.value}</div>
@@ -39,12 +46,14 @@ export default function ExplorePage() {
             <div className="rounded-[28px] border border-white/10 bg-[#111827]/80 p-4">
               <div className="mb-4 text-xs uppercase tracking-[0.24em] text-slate-400">Trending creators</div>
               <div className="grid gap-4 md:grid-cols-3">
-                {creatorCards.map((creator) => (
-                  <div key={creator.name} className="rounded-[22px] border border-white/10 bg-gradient-to-r from-violet-500/10 to-cyan-500/10 p-4">
-                    <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${creator.accent} text-lg font-black text-white`}>{creator.name.split(' ').map((part) => part[0]).join('').slice(0,2)}</div>
+                {db.users.slice(0, 3).map((creator) => (
+                  <div key={creator.id} className="rounded-[22px] border border-white/10 bg-gradient-to-r from-violet-500/10 to-cyan-500/10 p-4">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 text-lg font-black text-white">
+                      {creator.name.split(' ').map((part) => part[0]).join('').slice(0,2)}
+                    </div>
                     <div className="text-lg font-bold text-white">{creator.name}</div>
-                    <div className="text-sm text-slate-400">{creator.handle}</div>
-                    <div className="mt-2 text-xs uppercase tracking-[0.18em] text-violet-300">{creator.niche}</div>
+                    <div className="text-sm text-slate-400">@{creator.handle}</div>
+                    <div className="mt-2 text-xs uppercase tracking-[0.18em] text-violet-300">{creator.role}</div>
                     <button className="mt-4 w-full rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-2 text-sm font-semibold text-violet-200">Follow</button>
                   </div>
                 ))}
@@ -54,8 +63,8 @@ export default function ExplorePage() {
             <div className="rounded-[28px] border border-white/10 bg-[#111827]/80 p-4">
               <div className="mb-4 text-xs uppercase tracking-[0.24em] text-slate-400">Hot topics</div>
               <div className="flex flex-wrap gap-2">
-                {trendTopics.map((item) => (
-                  <span key={item.topic} className="rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-2 text-sm text-violet-200">{item.topic}</span>
+                {['#AIRevolution','#CreatorEconomy','#GenZCulture','#ProductVision','#DesignSystems'].map((item) => (
+                  <span key={item} className="rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-2 text-sm text-violet-200">{item}</span>
                 ))}
               </div>
             </div>

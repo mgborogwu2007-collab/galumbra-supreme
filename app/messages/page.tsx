@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { messages } from "@/lib/mock-data";
+import { readDb } from "@/lib/data";
 
-export default function MessagesPage() {
+export default async function MessagesPage() {
+  const db = await readDb();
+
   return (
     <main className="min-h-screen bg-[#080b14] p-6 text-white">
       <div className="mx-auto max-w-7xl">
@@ -17,7 +19,7 @@ export default function MessagesPage() {
           <aside className="rounded-[28px] border border-white/10 bg-[#111827]/80 p-4">
             <div className="mb-4 text-xs uppercase tracking-[0.24em] text-slate-400">Inbox</div>
             <div className="space-y-3">
-              {messages.map((item) => (
+              {db.messages.map((item) => (
                 <div key={item.name} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-cyan-400 font-bold text-white">{item.name.slice(0,2).toUpperCase()}</div>
                   <div className="min-w-0 flex-1">

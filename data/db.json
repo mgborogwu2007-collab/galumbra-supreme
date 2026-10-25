@@ -1,0 +1,184 @@
+import { promises as fs } from "fs";
+import path from "path";
+import { cookies } from "next/headers";
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  handle: string;
+  password: string;
+  role: string;
+  bio: string;
+  followers: number;
+  following: number;
+  avatar: string;
+  premium: boolean;
+};
+
+export type Post = {
+  id: string;
+  authorId: string;
+  author: string;
+  authorHandle: string;
+  role: string;
+  avatar: string;
+  content: string;
+  image?: string;
+  likes: number;
+  comments: number;
+  shares: number;
+  tags: string[];
+  createdAt: string;
+};
+
+export type Community = {
+  name: string;
+  members: string;
+  focus: string;
+};
+
+export type MessageItem = {
+  name: string;
+  preview: string;
+  time: string;
+};
+
+export type Db = {
+  users: User[];
+  posts: Post[];
+  communities: Community[];
+  messages: MessageItem[];
+};
+
+const dataFile = path.join(process.cwd(), "data", "db.json");
+
+const seedData: Db = {
+  users: [
+    {
+      id: "user_1",
+      name: "Galumbra Supreme",
+      email: "galumbra@demo.com",
+      handle: "galumbra",
+      password: "demo123",
+      role: "Platform",
+      bio: "A premium digital ecosystem for creators, founders, and communities.",
+      followers: 14200,
+      following: 396,
+      avatar: "GS",
+      premium: true,
+    },
+    {
+      id: "user_2",
+      name: "Nyra Vale",
+      email: "nyra@demo.com",
+      handle: "nyravale",
+      password: "demo123",
+      role: "AI Strategist",
+      bio: "Helping teams turn AI into a real growth engine.",
+      followers: 1400000,
+      following: 345,
+      avatar: "NV",
+      premium: true,
+    },
+    {
+      id: "user_3",
+      name: "Keon Arlo",
+      email: "keon@demo.com",
+      handle: "keonarlo",
+      password: "demo123",
+      role: "Founder Storytelling",
+      bio: "Story-first product design for bold companies.",
+      followers: 820000,
+      following: 220,
+      avatar: "KA",
+      premium: false,
+    },
+  ],
+  posts: [
+    {
+      id: "post_1",
+      authorId: "user_2",
+      author: "Nyra Vale",
+      authorHandle: "nyravale",
+      role: "AI Strategist",
+      avatar: "NV",
+      content: "The best brands aren't built by chasing attention. They're built by creating a signal people instantly recognize and trust. Culture is a compounding asset.",
+      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+      likes: 18240,
+      comments: 3412,
+      shares: 968,
+      tags: ["#BrandPower", "#Culture", "#Vision"],
+      createdAt: "2h ago",
+    },
+    {
+      id: "post_2",
+      authorId: "user_3",
+      author: "Keon Arlo",
+      authorHandle: "keonarlo",
+      role: "Founder / Builder",
+      avatar: "KA",
+      content: "Product-market fit is not the end goal. It's the beginning of a system that compounds trust, speed, and narrative. Build before you broadcast.",
+      likes: 24010,
+      comments: 1840,
+      shares: 1320,
+      tags: ["#BuildInPublic", "#Startup", "#Narrative"],
+      createdAt: "5h ago",
+    },
+    {
+      id: "post_3",
+      authorId: "user_1",
+      author: "Galumbra Supreme",
+      authorHandle: "galumbra",
+      role: "Platform",
+      avatar: "GS",
+      content: "Great communities don't just react. They accelerate each other. When people feel seen, they bring energy, ideas, and momentum to the whole room.",
+      likes: 16320,
+      comments: 2198,
+      shares: 778,
+      tags: ["#Community", "#Growth", "#CreatorPower"],
+      createdAt: "8h ago",
+    },
+  ],
+  communities: [
+    { name: "Signal Founders", members: "170K", focus: "Startups & scale" },
+    { name: "Vision Lab", members: "92K", focus: "Design + strategy" },
+    { name: "Creative Flow", members: "64K", focus: "Creators + media" },
+    { name: "The Studio Circle", members: "41K", focus: "Product + brand" },
+  ],
+  messages: [
+    { name: "Nyra Vale", preview: "Let's ship the next creator cohort this week.", time: "1m" },
+    { name: "Keon Arlo", preview: "The new launch narrative is landing really well.", time: "8m" },
+    { name: "Selene Moss", preview: "We need a stronger community pulse for the drop.", time: "20m" },
+  ],
+};
+
+export async function ensureDatabase() {
+  await fs.mkdir(path.dirname(dataFile), { recursive: true });
+
+  try {
+    await fs.access(dataFile);
+  } catch {
+    await fs.writeFile(dataFile, JSON.stringify(seedData, null, 2), "utf-8");
+  }
+}
+
+export async function readDb(): Promise<Db> {
+  await ensureDatabase();
+  const raw = await fs.readFile(dataFile, "utf-8");
+  return JSON.parse(raw) as Db;
+}
+
+export async function writeDb(db: Db) {
+  await ensureDatabase();
+  await fs.writeFile(dataFile, JSON.stringify(db, null, 2), "utf-8");
+}
+
+export async function getAuthenticatedUser() {
+  const sessionCookie = cookies().get("galumbra_session")?.value;
+  if (!sessionCookie) return null;
+
+  const db = await readDb();
+  return db.users.find((user) => user.id === sessionCookie) ?? null;
+}
+

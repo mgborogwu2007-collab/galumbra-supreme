@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { communities } from "@/lib/mock-data";
+import { readDb } from "@/lib/data";
 
-export default function CommunitiesPage() {
+export default async function CommunitiesPage() {
+  const db = await readDb();
+
   return (
     <main className="min-h-screen bg-[#080b14] p-6 text-white">
       <div className="mx-auto max-w-7xl">
@@ -14,7 +16,7 @@ export default function CommunitiesPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {communities.map((community, index) => (
+          {db.communities.map((community, index) => (
             <div key={community.name} className="rounded-[28px] border border-white/10 bg-[#111827]/80 p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${index % 2 === 0 ? 'from-violet-500 to-cyan-400' : 'from-emerald-500 to-cyan-400'} font-black text-white`}>
